@@ -14,6 +14,8 @@ import (
 //go:embed .env
 var envTemplate embed.FS
 
+const version = "1.0.0"
+
 type VPNConfig struct {
 	Username   string `json:"username"`
 	Secret     string `json:"secret"` // Encrypted, base64
@@ -30,6 +32,7 @@ func init() {
 func main() {
 	app := &cli.Command{
 		Name:     "vynx",
+		Version:  version,
 		Usage:    "VPN connector with TOTP and config encryption",
 		Commands: []*cli.Command{},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
