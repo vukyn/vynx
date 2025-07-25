@@ -40,8 +40,6 @@ func connectVPN() error {
 		switch runtime.GOOS {
 		case "linux":
 			fmt.Println("To install on Linux: sudo apt-get install openvpn")
-		case "windows":
-			fmt.Println("To install on Windows: choco install openvpn")
 		case "darwin":
 			fmt.Println("To install on macOS: brew install openvpn")
 		default:

@@ -18,14 +18,9 @@ build-mac:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/vynx_macos_v$(VERSION)_amd64 .
 	GOOS=darwin GOARCH=arm64 go build -o ./bin/vynx_macos_v$(VERSION)_arm64 .
 
-build-windows:
-	GOOS=windows GOARCH=amd64 go build -o ./bin/vynx_windows_v$(VERSION)_amd64.exe .
-	GOOS=windows GOARCH=arm64 go build -o ./bin/vynx_windows_v$(VERSION)_arm64.exe .
-
 build-all:
 	make build-linux
 	make build-mac
-	make build-windows
 
 tag:
 	git tag -a v$(VERSION) -m "Release version $(VERSION)"

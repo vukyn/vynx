@@ -31,12 +31,6 @@ For Linux:
 sudo apt-get install openvpn
 ```
 
-For Windows:
-
-```bash
-choco install openvpn
-```
-
 ---
 
 ## 📦 Installation
@@ -60,7 +54,9 @@ make install
 
 ### Install from binary
 
-Download the binary from the [releases](https://github.com/vukyn/vynx/releases) page.
+<!-- Download the binary from the [releases](https://github.com/vukyn/vynx/releases) page. -->
+
+Please build from source.
 
 ## ⚙️ Usage
 
