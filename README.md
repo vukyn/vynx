@@ -55,7 +55,7 @@ make build
 Make it available system-wide:
 
 ```bash
-sudo cp bin/vynx /usr/local/bin/
+make install
 ```
 
 ### Install from binary
