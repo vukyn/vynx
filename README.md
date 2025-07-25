@@ -54,9 +54,7 @@ make install
 
 ### Install from binary
 
-<!-- Download the binary from the [releases](https://github.com/vukyn/vynx/releases) page. -->
-
-Please build from source.
+Download the binary from the [releases](https://github.com/vukyn/vynx/releases) page.
 
 ## ⚙️ Usage
 
