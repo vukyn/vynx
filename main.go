@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"embed"
 	"fmt"
@@ -23,10 +24,7 @@ type VPNConfig struct {
 }
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic("Error loading .env file")
-	}
+	loadEnv()
 }
 
 func main() {
@@ -52,5 +50,26 @@ func main() {
 
 	if err := app.Run(context.Background(), os.Args); err != nil {
 		panic(err)
+	}
+}
+
+func loadEnv() {
+	// Load the embedded .env file content
+	envData, err := envTemplate.ReadFile(".env")
+	if err != nil {
+		panic("Failed to read embedded .env file")
+	}
+
+	// Parse the .env content into a map
+	envMap, err := godotenv.Parse(bytes.NewReader(envData))
+	if err != nil {
+		panic("Failed to parse embedded .env")
+	}
+
+	// Set the parsed variables into the environment
+	for k, v := range envMap {
+		if err := os.Setenv(k, v); err != nil {
+			panic("Failed to set env var")
+		}
 	}
 }
