@@ -8,7 +8,7 @@ run:
 	go run main.go
 	
 build:
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./bin/vynx .
+	go build -o ./bin/vynx .
 
 build-linux:
 	GOOS=linux GOARCH=amd64 go build -o ./bin/vynx_linux_v$(VERSION)_amd64 .
