@@ -42,17 +42,17 @@ Clone and build the tool:
 ```bash
 git clone https://github.com/vukyn/vynx.git
 cd vynx
-make -s gen-seckey | awk '{print "AES_KEY="$0}' > .env
+make gen-seckey
 make build
 ```
 
-If you already have a `.env` and just want to replace `AES_KEY`:
+If you already have a `.env` and just want to update `AES_KEY`:
 
 ```bash
-KEY=$(make -s gen-seckey); if grep -q "^AES_KEY=" .env 2>/dev/null; then sed -i "" "s/^AES_KEY=.*/AES_KEY=$KEY/" .env; else printf "AES_KEY=%s\n" "$KEY" >> .env; fi
+make gen-seckey
 ```
 
-Make it available system-wide:
+Make the binary available system-wide:
 
 ```bash
 make install
