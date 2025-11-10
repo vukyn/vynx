@@ -38,4 +38,4 @@ clean:
 	@rm -rf ./bin
 
 gen-seckey:
-	LC_ALL=C tr -dc 'A-Z2-7' </dev/urandom | head -c 32; echo
+	KEY=$$(LC_ALL=C tr -dc 'A-Z2-7' </dev/urandom | head -c 32); if grep -q "^AES_KEY=" .env 2>/dev/null; then sed -i "" "s/^AES_KEY=.*/AES_KEY=$$KEY/" .env; else printf "AES_KEY=%s\n" "$$KEY" >> .env; fi;
