@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"fmt"
+	"errors"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -19,7 +19,8 @@ const version = "1.0.0"
 
 type VPNConfig struct {
 	Username   string `json:"username"`
-	Secret     string `json:"secret"` // Encrypted, base64
+	Password   string `json:"password,omitempty"` // Encrypted, base64 (optional)
+	Secret     string `json:"secret,omitempty"`   // Encrypted, base64 (optional)
 	OvpnConfig string `json:"ovpn_config"`
 }
 
@@ -37,13 +38,19 @@ func main() {
 			switch cmd.NArg() {
 			case 0:
 				return connectVPN()
-			default:
-				if cmd.NArg() != 2 {
-					return fmt.Errorf("Usage: vynx <username> <secret>")
-				}
+			case 2:
+				// vynx <username> <password>
 				username := cmd.Args().Get(0)
-				secret := cmd.Args().Get(1)
-				return generateVPNConfig(username, secret)
+				password := cmd.Args().Get(1)
+				return generateVPNConfig(username, password, "")
+			case 3:
+				// vynx <username> <password> <secret>
+				username := cmd.Args().Get(0)
+				password := cmd.Args().Get(1)
+				secret := cmd.Args().Get(2)
+				return generateVPNConfig(username, password, secret)
+			default:
+				return errors.New("usage: vynx [<username> <password>] or vynx [<username> <password> <secret>]")
 			}
 		},
 	}

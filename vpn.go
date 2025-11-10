@@ -2,25 +2,41 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
 
+	"github.com/atotto/clipboard"
 	"github.com/vukyn/vynx/pkg/cryp"
 	"github.com/vukyn/vynx/pkg/otp"
 )
 
-func generateVPNConfig(username string, secret string) error {
-	key := os.Getenv("AES_KEY")
-	encSecret, err := cryp.EncryptAES(secret, key)
-	if err != nil {
-		return err
-	}
+func generateVPNConfig(username string, password string, secret string) error {
 	cfg := VPNConfig{
 		Username:   username,
-		Secret:     encSecret,
 		OvpnConfig: "myvpn.ovpn",
+	}
+	key := os.Getenv("AES_KEY")
+	// Encrypt password if provided
+	if password != "" {
+		encPassword, err := cryp.EncryptAES(password, key)
+		if err != nil {
+			return err
+		}
+		cfg.Password = encPassword
+	}
+	// Encrypt secret if provided
+	if secret != "" {
+		encSecret, err := cryp.EncryptAES(secret, key)
+		if err != nil {
+			return err
+		}
+		cfg.Secret = encSecret
+	}
+	if password == "" && secret == "" {
+		return errors.New("either password or secret must be provided")
 	}
 	data, err := json.MarshalIndent(cfg, "", "\t")
 	if err != nil {
@@ -29,7 +45,8 @@ func generateVPNConfig(username string, secret string) error {
 	if err := os.WriteFile("vpn_config.json", data, 0600); err != nil {
 		return err
 	}
-	fmt.Println("vpn_config.json generated with encrypted secret.")
+
+	fmt.Println("vpn_config.json is generated.")
 	return nil
 }
 
@@ -54,21 +71,46 @@ func connectVPN() error {
 		return err
 	}
 
-	secret, err := cryp.DecryptAES(cfg.Secret, os.Getenv("AES_KEY"))
-	if err != nil {
-		fmt.Println("Failed to decrypt secret:", err)
-		return err
+	if cfg.Password == "" && cfg.Secret == "" {
+		return errors.New("no password or secret found in config")
 	}
 
-	otp, err := otp.GenerateTOTP(secret)
-	if err != nil {
-		fmt.Println("Failed to generate OTP:", err)
-		return err
+	var password string
+
+	// Generate OTP from secret
+	if cfg.Secret != "" {
+		secret, err := cryp.DecryptAES(cfg.Secret, os.Getenv("AES_KEY"))
+		if err != nil {
+			fmt.Println("Failed to decrypt secret:", err)
+			return err
+		}
+		otp, err := otp.GenerateTOTP(secret)
+		if err != nil {
+			fmt.Println("Failed to generate OTP:", err)
+			return err
+		}
+		password = otp
+		// Write text to clipboard
+		if err := clipboard.WriteAll(otp); err != nil {
+			fmt.Println("Failed to copy to clipboard:", err)
+			return err
+		}
+		fmt.Println("OTP is copied to clipboard.")
+	}
+
+	// Decrypt password (overwrites OTP if password is also present)
+	if cfg.Password != "" {
+		decPassword, err := cryp.DecryptAES(cfg.Password, os.Getenv("AES_KEY"))
+		if err != nil {
+			fmt.Println("Failed to decrypt password:", err)
+			return err
+		}
+		password = decPassword
 	}
 
 	// Prepare auth file
 	authFile := ".vpn_auth.tmp"
-	authContent := fmt.Sprintf("%s\n%s\n", cfg.Username, otp)
+	authContent := fmt.Sprintf("%s\n%s\n", cfg.Username, password)
 	if err := os.WriteFile(authFile, []byte(authContent), 0600); err != nil {
 		fmt.Println("Failed to write auth file:", err)
 		return err
