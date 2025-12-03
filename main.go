@@ -15,7 +15,7 @@ import (
 //go:embed .env
 var envTemplate embed.FS
 
-const version = "1.0.0"
+const version = "1.0.1"
 
 type VPNConfig struct {
 	Username   string `json:"username"`

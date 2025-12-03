@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 
 	"github.com/atotto/clipboard"
@@ -108,8 +109,9 @@ func connectVPN() error {
 		password = decPassword
 	}
 
-	// Prepare auth file
-	authFile := ".vpn_auth.tmp"
+	// Prepare auth file with absolute path
+	// Use /tmp to ensure it's accessible when running with sudo
+	authFile := "/tmp/.vynx_auth.tmp"
 	authContent := fmt.Sprintf("%s\n%s\n", cfg.Username, password)
 	if err := os.WriteFile(authFile, []byte(authContent), 0600); err != nil {
 		fmt.Println("Failed to write auth file:", err)
@@ -117,10 +119,21 @@ func connectVPN() error {
 	}
 	defer os.Remove(authFile)
 
-	// Call OpenVPN
-	cmd := exec.Command("sudo", "openvpn", "--config", cfg.OvpnConfig, "--auth-user-pass", authFile)
+	// Get absolute path for ovpn config
+	ovpnConfigPath := cfg.OvpnConfig
+	if !filepath.IsAbs(ovpnConfigPath) {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("failed to get current directory: %w", err)
+		}
+		ovpnConfigPath = filepath.Join(cwd, ovpnConfigPath)
+	}
 
-	// Optional: pipe stdout/stderr to your console
+	// Call OpenVPN
+	cmd := exec.Command("sudo", "openvpn", "--config", ovpnConfigPath, "--auth-user-pass", authFile)
+
+	// Pipe stdin/stdout/stderr to allow interactive input (for sudo password prompt)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
