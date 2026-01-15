@@ -15,7 +15,8 @@ import (
 //go:embed .env
 var envTemplate embed.FS
 
-const version = "1.0.1"
+const version = "1.2.0"
+const AES_KEY_1_2_0 = "WBAUGSQ6FEAZMQL7MCMZOR53IX3MOQGC"
 
 type VPNConfig struct {
 	Username   string `json:"username"`
@@ -64,7 +65,10 @@ func loadEnv() {
 	// Load the embedded .env file content
 	envData, err := envTemplate.ReadFile(".env")
 	if err != nil {
-		panic("Failed to read embedded .env file")
+		// load default aes key
+		os.Setenv("AES_KEY", AES_KEY_1_2_0)
+		return
+		// panic("Failed to read embedded .env file")
 	}
 
 	// Parse the .env content into a map
